@@ -1,0 +1,7 @@
+# frozen_string_literal: true
+source "https://rubygems.org"
+
+gem "sinatra"
+gem "httpclient"
+gem "pry-byebug"
+gem "sucker_punch"
