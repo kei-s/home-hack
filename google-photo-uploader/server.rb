@@ -35,11 +35,33 @@ class UploadPhotoJob
   end
 end
 
+class LastModification
+  @file = File.expand_path('../modifications.json', __FILE__)
+  @modification = JSON.parse(File.read(@file))
+
+  def self.get(device)
+    @modification[device]
+  end
+
+  def self.set(device, modification)
+    @modification[device] = modification
+    open(@file, 'w') do |f|
+      JSON.dump(@modification, f)
+    end
+  end
+end
+
+get '/last_modification' do
+  LastModification.get(params[:device])
+end
+
 post '/upload' do
   raise 'No file' unless params[:file]
   filename = params[:file][:filename]
   file = params[:file][:tempfile]
-  logger.info filename
+  device = params[:device]
+  modification = params[:modification]
+  LastModification.set(device, modification)
   UploadPhotoJob.perform_async(credentials, filename, file)
   'ok'
 end
