@@ -2,11 +2,37 @@ print("HTTP/1.1 200 Internal OK\n\n")
 local last_dirname = ""
 local last_moddir = 0
 
+local function encode(str)
+  str = string.gsub (str, "\r?\n", "\r\n")
+  str = string.gsub (str, "([^%w%-%.%_%~ ])",
+    function (c) return string.format ("%%%02X", string.byte(c)) end)
+  str = string.gsub (str, " ", "+")
+  return str
+end
+
+local function checkWlanLink()
+  for i = 1, 10 do
+    local result = fa.WlanLink()
+    if result == 1 then
+      return 1
+    end
+    sleep(1000 * i)
+  end
+  return 0
+end
+
 local function getLastModification(config)
-   local b,c,h = fa.request{
+  local b,c,h = fa.request{
     url = config.host .. "/last_modification?device=" .. config.device
   }
   return tonumber(b)
+end
+
+local function speak(config, text)
+  local b,c,h = fa.request{
+    url = config.speakerHost .. "/speak?text=" .. encode(text)
+  }
+  return b
 end
 
 local function uploadImage(config, file_path, modification)
@@ -54,17 +80,6 @@ local function uploadImage(config, file_path, modification)
   return b
 end
 
-local function checkWlanLink()
-  for i = 1, 10 do
-    local result = fa.WlanLink()
-    if result == 1 then
-      return 1
-    end
-    sleep(1000 * i)
-  end
-  return 0
-end
-
 local result = checkWlanLink()
 if result ~= 1 then
   print('Failed linking to Wi-fi')
@@ -107,7 +122,16 @@ for filename in lfs.dir(last_dirname) do
   end
 end
 
+if #files < 1 then
+  speak(config, 'カメラからアップロードするファイルはありません')
+  return
+end
+
+speak(config, 'カメラから'..#files ..'つのファイルをアップロードします')
+
 for i, f in pairs(files) do
   print('Uploading: '..f['filepath']..' '..f['mod'])
   uploadImage(config, f['filepath'], f['mod'])
 end
+
+speak(config, 'カメラからのアップロードが完了しました')
