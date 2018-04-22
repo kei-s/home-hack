@@ -1,0 +1,8 @@
+{
+  "name": "register-pee-and-pooh",
+  "version": "0.0.1",
+  "dependencies": {
+    "moment": "^2.21.0",
+    "request": "^2.85.0"
+  }
+}
