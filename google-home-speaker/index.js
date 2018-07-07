@@ -1,6 +1,8 @@
 let express = require('express');
+let morgan = require('morgan');
 let googlehome = require('google-home-notifier');
 let app = express();
+app.use(morgan('combined'));
 
 let credentials = require('./credentials.json');
 
